@@ -247,29 +247,33 @@ var Player = /*#__PURE__*/function () {
     this.sprites = {
       stand: {
         right: createImage(_img_spriteStandRight_png__WEBPACK_IMPORTED_MODULE_7__["default"]),
+        left: createImage(_img_spriteStandLeft_png__WEBPACK_IMPORTED_MODULE_6__["default"]),
         cropWidth: 177,
         widht: 66
       },
       run: {
         right: createImage(_img_spriteRunRight_png__WEBPACK_IMPORTED_MODULE_5__["default"]),
-        cropWidth: 340,
+        left: createImage(_img_spriteRunLeft_png__WEBPACK_IMPORTED_MODULE_4__["default"]),
+        cropWidth: 341,
         widht: 127.875
       }
     };
     this.currentSprite = this.sprites.stand.right;
-    this.currentCropWidht = 177;
+    this.currentCropWidth = 177;
   }
 
   _createClass(Player, [{
     key: "draw",
     value: function draw() {
-      c.drawImage(this.currentSprite, this.currentCropWidht * this.frames, 0, this.currentCropWidht, 400, this.position.x, this.position.y, this.width, this.height);
+      c.drawImage(this.currentSprite, this.currentCropWidth * this.frames, 0, this.currentCropWidth, 400, this.position.x, this.position.y, this.width, this.height);
     }
   }, {
     key: "update",
     value: function update() {
       this.frames++;
-      if (this.frames > 28) this.frames = 0;
+      var currentSprite = this.currentSprite,
+          sprites = this.sprites;
+      if (this.frames > 59 && (currentSprite === sprites.stand.right || currentSprite === sprites.stand.left)) this.frames = 0;else if (this.frames > 29 && (currentSprite === sprites.run.right || currentSprite === sprites.run.left)) this.frames = 0;
       this.draw();
       this.position.x += this.velocity.x;
       this.position.y += this.velocity.y;
@@ -345,6 +349,7 @@ var platformSmallTallImage = createImage(_img_platformSmallTall_png__WEBPACK_IMP
 var player = new Player();
 var platforms = [];
 var genericObjects = [];
+var lastKey;
 var keys = {
   right: {
     pressed: false
@@ -442,10 +447,21 @@ function animate() {
     if (player.position.y + player.height <= platform.position.y && player.position.y + player.height + player.velocity.y >= platform.position.y && player.position.x + player.width >= platform.position.x && player.position.x <= platform.position.x + platform.width) {
       player.velocity.y = 0;
     }
-  }); // condição para vencer
+  }); // troca de sprites
+
+  if (keys.right.pressed && lastKey === 'right' && player.currentSprite !== player.sprites.run.right) {
+    player.currentSprite = player.sprites.run.right;
+  } else if (keys.left.pressed && lastKey === 'left' && player.currentSprite !== player.sprites.run.left) {
+    player.currentSprite = player.sprites.run.left;
+  } else if (!keys.left.pressed && lastKey === 'left' && player.currentSprite !== player.sprites.stand.left) {
+    player.currentSprite = player.sprites.stand.left;
+  } else if (!keys.right.pressed && lastKey === 'right' && player.currentSprite !== player.sprites.stand.right) {
+    player.currentSprite = player.sprites.stand.right;
+  } // condição para vencer
+
 
   if (scrollOffset > platformImage.width * 5 + 300 - 2) {
-    console.log('You Win!');
+    console.log('Você venceu!');
   } //condição para perder
 
 
@@ -463,7 +479,8 @@ addEventListener('keydown', function (_ref3) {
   switch (keyCode) {
     case 65:
       console.log('left');
-      keys.left.pressed = true;
+      keys.left.pressed = true; //lastKey = 'left'
+
       break;
 
     case 83:
@@ -472,10 +489,8 @@ addEventListener('keydown', function (_ref3) {
 
     case 68:
       console.log('right');
-      keys.right.pressed = true;
-      player.currentSprite = player.sprites.run.right;
-      player.currentCropWidht = player.sprites.run.cropWidth;
-      player.width = player.sprites.run.width;
+      keys.right.pressed = true; //lastKey = 'right'
+
       break;
 
     case 87:
